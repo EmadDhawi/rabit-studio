@@ -70,11 +70,6 @@ export function ProductsTable({ products, onUpdateProduct, onDeleteProduct }: Pr
     setEditingProduct({ ...editingProduct, active: checked });
   };
 
-  const handleDeleteSwitchChange = (checked: boolean) => {
-    if (!editingProduct) return;
-    setEditingProduct({ ...editingProduct, deleted: checked });
-  };
-
   const handleSaveChanges = () => {
     if (!editingProduct) return;
     onUpdateProduct(editingProduct);
@@ -88,9 +83,7 @@ export function ProductsTable({ products, onUpdateProduct, onDeleteProduct }: Pr
     setEditingProduct(null);
   };
 
-  const visibleProducts = products.filter(p => !p.deleted);
-
-  if (visibleProducts.length === 0) {
+  if (products.length === 0) {
     return (
         <Card className="flex flex-col items-center justify-center text-center text-muted-foreground p-12">
             <p>No products found. Get started by creating a new product.</p>
@@ -114,7 +107,7 @@ export function ProductsTable({ products, onUpdateProduct, onDeleteProduct }: Pr
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visibleProducts.map((product) => {
+              {products.map((product) => {
                 const isExpanded = expandedRows.includes(product.id);
                 return (
                 <React.Fragment key={product.id}>
@@ -207,13 +200,6 @@ export function ProductsTable({ products, onUpdateProduct, onDeleteProduct }: Pr
                                       </div>
                                       <Switch id={`active-${product.id}`} checked={editingProduct.active ?? false} onCheckedChange={handleActiveSwitchChange} />
                                   </div>
-                                   <div className="flex items-center justify-between rounded-lg border border-destructive/50 p-3 shadow-sm">
-                                      <div className="space-y-0.5">
-                                        <Label htmlFor={`deleted-${product.id}`} className="cursor-pointer text-destructive">Delete</Label>
-                                        <p className="text-sm text-muted-foreground">Mark this product for deletion. It will be hidden from the list.</p>
-                                      </div>
-                                      <Switch id={`deleted-${product.id}`} checked={editingProduct.deleted ?? false} onCheckedChange={handleDeleteSwitchChange} />
-                                   </div>
                                 </CardContent>
                                 <CardFooter className="justify-end gap-2 pt-6">
                                   <Button variant="outline" onClick={handleCancel}>

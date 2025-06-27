@@ -1,11 +1,11 @@
 import type { Order, Product } from './types';
 
 export const mockProducts: Product[] = [
-  { id: 'P001', name: 'Classic T-Shirt', sku: 'TS-01-BLK', imageUrl: 'https://placehold.co/80x80.png', quantity: 120, active: true, deleted: false },
-  { id: 'P002', name: 'Coffee Mug', sku: 'MG-01-WHT', imageUrl: 'https://placehold.co/80x80.png', quantity: 75, active: true, deleted: false },
-  { id: 'P003', name: 'Cozy Hoodie', sku: 'HD-01-GRY', imageUrl: 'https://placehold.co/80x80.png', quantity: 0, active: false, deleted: false },
-  { id: 'P004', name: 'Baseball Cap', sku: 'CP-01-NAV', imageUrl: 'https://placehold.co/80x80.png', quantity: 200, active: true, deleted: false },
-  { id: 'P005', name: 'Sticker Pack', sku: 'STK-01-MIX', imageUrl: 'https://placehold.co/80x80.png', quantity: 500, active: true, deleted: false },
+  { id: 'P001', name: 'Classic T-Shirt', sku: 'TS-01-BLK', imageUrl: 'https://placehold.co/80x80.png', quantity: 120, active: true },
+  { id: 'P002', name: 'Coffee Mug', sku: 'MG-01-WHT', imageUrl: 'https://placehold.co/80x80.png', quantity: 75, active: true },
+  { id: 'P003', name: 'Cozy Hoodie', sku: 'HD-01-GRY', imageUrl: 'https://placehold.co/80x80.png', quantity: 0, active: false },
+  { id: 'P004', name: 'Baseball Cap', sku: 'CP-01-NAV', imageUrl: 'https://placehold.co/80x80.png', quantity: 200, active: true },
+  { id: 'P005', name: 'Sticker Pack', sku: 'STK-01-MIX', imageUrl: 'https://placehold.co/80x80.png', quantity: 500, active: true },
 ];
 
 export const mockOrders: Order[] = [

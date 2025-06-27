@@ -7,7 +7,6 @@ export type Product = {
   imageUrl?: string;
   quantity?: number;
   active?: boolean;
-  deleted?: boolean;
 };
 
 export type OrderItem = {
