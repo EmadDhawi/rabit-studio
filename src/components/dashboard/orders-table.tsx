@@ -13,13 +13,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Trash2, AlertTriangle } from 'lucide-react';
+import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Trash2, AlertTriangle, Pencil } from 'lucide-react';
 import * as React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 
 const statusConfig: Record<
   OrderStatus,
@@ -91,6 +92,15 @@ export function OrdersTable() {
       setNewNotes(prev => ({ ...prev, [orderId]: '' }));
   };
 
+  const handleFieldChange = (orderId: string, field: 'shippingCompany' | 'driver', value: string) => {
+    setOrders(currentOrders =>
+      currentOrders.map(order =>
+        order.id === orderId ? { ...order, [field]: value } : order
+      )
+    );
+  };
+
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -160,6 +170,27 @@ export function OrdersTable() {
                                        </li>
                                     ))}
                                   </ul>
+                                  <Separator className="my-4" />
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="grid gap-2">
+                                          <Label htmlFor={`shipping-company-${order.id}`} className="font-semibold">Shipping Company</Label>
+                                          <Input
+                                              id={`shipping-company-${order.id}`}
+                                              value={order.shippingCompany || ''}
+                                              onChange={(e) => handleFieldChange(order.id, 'shippingCompany', e.target.value)}
+                                              placeholder="e.g., FedEx, UPS"
+                                          />
+                                      </div>
+                                      <div className="grid gap-2">
+                                          <Label htmlFor={`driver-${order.id}`} className="font-semibold">Driver / Delivery Person</Label>
+                                          <Input
+                                              id={`driver-${order.id}`}
+                                              value={order.driver || ''}
+                                              onChange={(e) => handleFieldChange(order.id, 'driver', e.target.value)}
+                                              placeholder="e.g., John Smith"
+                                          />
+                                      </div>
+                                  </div>
                                   <Separator className="my-4" />
                                     <div className="grid gap-4">
                                         <div>

@@ -15,6 +15,8 @@ export const mockOrders: Order[] = [
     notes: [
       { id: 'N001', content: 'Customer requested gift wrapping.', date: '2023-10-26T10:00:00Z', resolved: true },
     ],
+    shippingCompany: 'FedEx',
+    driver: 'Mike Ross',
   },
   {
     id: 'ORD002',
@@ -30,6 +32,8 @@ export const mockOrders: Order[] = [
       { id: 'N002', content: 'Expedited shipping requested.', date: '2023-10-25T11:00:00Z', resolved: true },
       { id: 'N005', content: 'Confirm address with customer, seems to be a typo.', date: '2023-10-25T12:00:00Z', resolved: false }
     ],
+    shippingCompany: 'DHL',
+    driver: 'Sarah Connor',
   },
   {
     id: 'ORD003',
@@ -81,6 +85,8 @@ export const mockOrders: Order[] = [
     items: [
         { product: { id: 'P001', name: 'T-Shirt', sku: 'TS-01' }, quantity: 3 },
     ],
+    shippingCompany: 'Chronopost',
+    driver: 'Jean-Luc Picard',
   },
   {
     id: 'ORD007',
@@ -92,5 +98,6 @@ export const mockOrders: Order[] = [
     items: [
         { product: { id: 'P004', name: 'Cap', sku: 'CP-01' }, quantity: 5 },
     ],
+    shippingCompany: 'Canada Post',
   },
 ];

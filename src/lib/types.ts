@@ -27,4 +27,6 @@ export type Order = {
   status: OrderStatus;
   items: OrderItem[];
   notes?: Note[];
+  shippingCompany?: string;
+  driver?: string;
 };
