@@ -1,24 +1,49 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Warehouse } from "lucide-react";
+'use client';
+
+import * as React from 'react';
+import { Button } from "@/components/ui/button";
+import { ProductsTable } from "@/components/dashboard/products-table";
+import { PlusCircle } from "lucide-react";
+import { CreateProductDialog } from '@/components/dashboard/create-product-dialog';
+import { mockProducts } from '@/lib/data';
+import type { Product } from '@/lib/types';
 
 export default function ProductsPage() {
+  const [products, setProducts] = React.useState<Product[]>(mockProducts);
+
+  const handleCreateProduct = (newProduct: Omit<Product, 'id'>) => {
+    setProducts(prev => [
+      { ...newProduct, id: `P${Date.now()}` },
+      ...prev,
+    ]);
+  };
+  
+  const handleUpdateProduct = (updatedProduct: Product) => {
+    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+  };
+  
+  const handleDeleteProduct = (productId: string) => {
+    setProducts(prev => prev.filter(p => p.id !== productId));
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 h-full">
-      <header className="mb-6 flex items-center gap-2">
-        <h1 className="text-3xl font-bold font-headline text-foreground">Products</h1>
+      <header className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold font-headline text-foreground">Products</h1>
+        </div>
+        <CreateProductDialog onCreateProduct={handleCreateProduct}>
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Product
+          </Button>
+        </CreateProductDialog>
       </header>
-      <Card>
-        <CardHeader>
-          <CardTitle>Products Management</CardTitle>
-          <CardDescription>
-            Here you can manage your brand's products. This feature is coming soon.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center text-center text-muted-foreground p-12">
-            <Warehouse className="h-16 w-16 mb-4" />
-            <p>Product listing and management will appear here.</p>
-        </CardContent>
-      </Card>
+      <ProductsTable 
+        products={products}
+        onUpdateProduct={handleUpdateProduct}
+        onDeleteProduct={handleDeleteProduct}
+      />
     </div>
   );
 }

@@ -4,6 +4,9 @@ export type Product = {
   id: string;
   name: string;
   sku: string;
+  imageUrl?: string;
+  quantity?: number;
+  active?: boolean;
 };
 
 export type OrderItem = {
