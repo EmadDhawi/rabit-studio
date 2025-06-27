@@ -30,8 +30,8 @@ const statusConfig: Record<
   New: { variant: 'secondary', icon: Clock, color: 'text-muted-foreground' },
   Prepared: { variant: 'secondary', icon: Archive, color: 'text-primary' },
   Shipped: { variant: 'secondary', icon: Truck, color: 'text-primary' },
-  Delivered: { variant: 'default', icon: CheckCircle, color: 'text-[hsl(var(--chart-2))]' },
-  Cancelled: { variant: 'destructive', icon: XCircle, color: 'text-destructive' },
+  Delivered: { variant: 'default', icon: CheckCircle, color: 'text-primary-foreground' },
+  Cancelled: { variant: 'destructive', icon: XCircle, color: 'text-destructive-foreground' },
   Issue: { variant: 'secondary', icon: AlertTriangle, color: 'text-accent' },
 };
 
