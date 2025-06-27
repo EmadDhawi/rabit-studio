@@ -1,4 +1,4 @@
-import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { NavBar } from "@/components/layout/nav-bar";
 
 export default function AppLayout({
   children,
@@ -7,7 +7,7 @@ export default function AppLayout({
 }) {
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <SidebarNav />
+      <NavBar />
       <main className="flex-1">
         {children}
       </main>

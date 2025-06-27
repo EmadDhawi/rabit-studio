@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
-export function SidebarNav() {
+export function NavBar() {
   const pathname = usePathname();
 
   const menuItems = [
