@@ -11,6 +11,7 @@ export const mockOrders: Order[] = [
       { product: { id: 'P001', name: 'T-Shirt', sku: 'TS-01' }, quantity: 2 },
       { product: { id: 'P002', name: 'Mug', sku: 'MG-01' }, quantity: 1 },
     ],
+    notes: 'Customer requested gift wrapping.',
   },
   {
     id: 'ORD002',
@@ -21,6 +22,7 @@ export const mockOrders: Order[] = [
     items: [
       { product: { id: 'P003', name: 'Hoodie', sku: 'HD-01' }, quantity: 1 },
     ],
+    notes: 'Expedited shipping requested.',
   },
   {
     id: 'ORD003',
@@ -42,6 +44,7 @@ export const mockOrders: Order[] = [
     items: [
       { product: { id: 'P002', name: 'Mug', sku: 'MG-01' }, quantity: 10 },
     ],
+    notes: 'Fragile items, please handle with care.',
   },
   {
     id: 'ORD005',
@@ -52,6 +55,7 @@ export const mockOrders: Order[] = [
     items: [
       { product: { id: 'P003', name: 'Hoodie', sku: 'HD-01' }, quantity: 1 },
     ],
+    notes: 'Customer cancelled due to wrong size.',
   },
   {
     id: 'ORD006',

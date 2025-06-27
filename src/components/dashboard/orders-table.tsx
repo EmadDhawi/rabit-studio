@@ -18,6 +18,7 @@ import * as React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
 
 const statusConfig: Record<
   OrderStatus,
@@ -154,6 +155,20 @@ export function OrdersTable() {
                                                 Cancelled
                                             </Button>
                                         </div>
+                                    </div>
+                                    <Separator className="my-4" />
+                                    <div className="grid gap-2">
+                                        <Label htmlFor={`notes-${order.id}`} className="font-semibold">Notes</Label>
+                                        <Textarea
+                                            id={`notes-${order.id}`}
+                                            placeholder="Add a note for this order..."
+                                            defaultValue={order.notes}
+                                            rows={3}
+                                            className="text-sm"
+                                        />
+                                        <Button variant="outline" size="sm" className="justify-self-start">
+                                            Save Note
+                                        </Button>
                                     </div>
                                </CardContent>
                              </Card>

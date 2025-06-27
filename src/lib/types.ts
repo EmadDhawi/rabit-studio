@@ -18,4 +18,5 @@ export type Order = {
   date: string;
   status: OrderStatus;
   items: OrderItem[];
+  notes?: string;
 };
