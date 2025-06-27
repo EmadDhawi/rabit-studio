@@ -1,4 +1,6 @@
-import DashboardPage from '../page';
+import { redirect } from 'next/navigation';
 
-// The Orders page is the main dashboard view.
-export default DashboardPage;
+export default function OrdersPage() {
+  redirect('/dashboard');
+  return null;
+}

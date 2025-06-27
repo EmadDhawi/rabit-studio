@@ -22,9 +22,7 @@ export function SidebarNav() {
 
   const menuItems = [
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/dashboard/orders', label: 'Orders' },
     { href: '/dashboard/products', label: 'Products' },
-    { href: '/dashboard/admin', label: 'Admin' },
   ];
 
   const isActive = (href: string) => {
