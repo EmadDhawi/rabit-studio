@@ -121,8 +121,8 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <ScrollArea className="h-[60vh] pr-6">
-                <div className="space-y-4">
+            <ScrollArea className="h-[60vh]">
+                <div className="space-y-4 pr-4">
                     <FormField
                     control={form.control}
                     name="customerName"
