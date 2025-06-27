@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Trash2, AlertTriangle } from 'lucide-react';
 import * as React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
@@ -36,14 +36,9 @@ const statusConfig: Record<
 export function OrdersTable() {
   const [orders, setOrders] = React.useState(mockOrders);
   const [expandedRows, setExpandedRows] = React.useState<string[]>([]);
-  const [editingOrderId, setEditingOrderId] = React.useState<string | null>(null);
   const [newNotes, setNewNotes] = React.useState<Record<string, string>>({});
 
   const toggleRow = (id: string) => {
-    // If we're closing the currently editing row, exit edit mode
-    if (editingOrderId === id && expandedRows.includes(id)) {
-        setEditingOrderId(null);
-    }
     setExpandedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
@@ -95,14 +90,6 @@ export function OrdersTable() {
       );
       setNewNotes(prev => ({ ...prev, [orderId]: '' }));
   };
-  
-  const handleSaveChanges = (orderId: string) => {
-    // In a real app, you would dispatch an action to save changes to the server.
-    // For this mock, we just exit editing mode.
-    console.log(`Saving changes for order ${orderId}`);
-    setEditingOrderId(null);
-  };
-
 
   return (
     <Card>
@@ -124,7 +111,6 @@ export function OrdersTable() {
               {orders.map((order) => {
                 const config = statusConfig[order.status];
                 const isExpanded = expandedRows.includes(order.id);
-                const isEditing = editingOrderId === order.id;
 
                 return (
                   <React.Fragment key={order.id}>
@@ -156,17 +142,6 @@ export function OrdersTable() {
                                <CardHeader className="flex flex-row items-center justify-between">
                                  <CardTitle>Order Details</CardTitle>
                                  <div className="flex items-center gap-2">
-                                    {isEditing ? (
-                                        <Button variant="default" size="sm" onClick={() => handleSaveChanges(order.id)}>
-                                            <CheckCircle className="mr-2 h-3.5 w-3.5" />
-                                            Save Changes
-                                        </Button>
-                                    ) : (
-                                        <Button variant="outline" size="sm" onClick={() => setEditingOrderId(order.id)}>
-                                            <Edit className="mr-2 h-3.5 w-3.5" />
-                                            Edit Order
-                                        </Button>
-                                    )}
                                      <Button variant="destructive" size="sm">
                                          <Trash2 className="mr-2 h-3.5 w-3.5" />
                                          Delete Order
@@ -190,7 +165,7 @@ export function OrdersTable() {
                                         <div>
                                             <Label className="font-semibold">Update Status</Label>
                                             <p className="text-sm text-muted-foreground">
-                                                {isEditing ? "Click to update the order status." : "Click 'Edit Order' to update status."}
+                                                Click to update the order status.
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
@@ -200,7 +175,6 @@ export function OrdersTable() {
                                                     variant={order.status === status ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleStatusChange(order.id, status)}
-                                                    disabled={!isEditing}
                                                 >
                                                     {status}
                                                 </Button>
@@ -210,7 +184,6 @@ export function OrdersTable() {
                                                 className={cn(order.status === 'Issue' && 'bg-accent text-accent-foreground hover:bg-accent/90')}
                                                 size="sm"
                                                 onClick={() => handleStatusChange(order.id, 'Issue')}
-                                                disabled={!isEditing}
                                             >
                                                 <AlertTriangle className="mr-2 h-3.5 w-3.5" />
                                                 Issue
@@ -219,7 +192,6 @@ export function OrdersTable() {
                                                 variant={order.status === 'Cancelled' ? 'destructive' : 'outline'}
                                                 size="sm"
                                                 onClick={() => handleStatusChange(order.id, 'Cancelled')}
-                                                disabled={!isEditing}
                                             >
                                                 <XCircle className="mr-2 h-3.5 w-3.5" />
                                                 Cancelled
@@ -239,7 +211,6 @@ export function OrdersTable() {
                                                 onCheckedChange={(checked) => handleNoteResolveChange(order.id, note.id, !!checked)}
                                                 className="mt-1"
                                                 aria-label={`Mark note as ${note.resolved ? 'unresolved' : 'resolved'}`}
-                                                disabled={!isEditing}
                                               />
                                               <div className="grid gap-1.5 flex-1">
                                                 <Label
@@ -262,19 +233,18 @@ export function OrdersTable() {
                                         <Label htmlFor={`new-note-${order.id}`} className="sr-only">Add New Note</Label>
                                         <Textarea
                                           id={`new-note-${order.id}`}
-                                          placeholder={isEditing ? "Add a new note..." : "Click 'Edit Order' to add notes"}
+                                          placeholder="Add a new note..."
                                           rows={2}
                                           className="text-sm"
                                           value={newNotes[order.id] || ''}
                                           onChange={(e) => setNewNotes(prev => ({...prev, [order.id]: e.target.value}))}
-                                          disabled={!isEditing}
                                         />
                                         <Button
                                           variant="outline"
                                           size="sm"
                                           className="justify-self-start"
                                           onClick={() => handleAddNewNote(order.id)}
-                                          disabled={!isEditing || !newNotes[order.id]?.trim()}
+                                          disabled={!newNotes[order.id]?.trim()}
                                         >
                                           Add Note
                                         </Button>
