@@ -1,7 +1,6 @@
 'use client';
 
-import { mockOrders } from '@/lib/data';
-import type { OrderStatus } from '@/lib/types';
+import type { Order, OrderStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +21,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const statusConfig: Record<
   OrderStatus,
@@ -37,41 +47,57 @@ const statusConfig: Record<
 
 const filterOptions: Array<OrderStatus | 'All'> = ['All', 'New', 'Prepared', 'Shipped', 'Delivered', 'Cancelled', 'Issue'];
 
+interface OrdersTableProps {
+    orders: Order[];
+    onUpdateOrder: (order: Order) => void;
+    onDeleteOrder: (orderId: string) => void;
+}
 
-export function OrdersTable() {
-  const [orders, setOrders] = React.useState(mockOrders);
+export function OrdersTable({ orders, onUpdateOrder, onDeleteOrder }: OrdersTableProps) {
+  const [editableOrders, setEditableOrders] = React.useState<Record<string, Order>>({});
   const [expandedRows, setExpandedRows] = React.useState<string[]>([]);
   const [newNotes, setNewNotes] = React.useState<Record<string, string>>({});
   const { toast } = useToast();
   const [activeFilter, setActiveFilter] = React.useState<OrderStatus | 'All'>('All');
 
+  React.useEffect(() => {
+    // When orders prop changes, reset editable state
+    setEditableOrders({});
+  }, [orders]);
+  
+  const getOrderState = (orderId: string): Order => {
+    return editableOrders[orderId] || orders.find(o => o.id === orderId)!;
+  }
+
+  const setOrderState = (order: Order) => {
+    setEditableOrders(prev => ({ ...prev, [order.id]: order }));
+  };
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
+    // Remove pending edits if row is collapsed
+    if (expandedRows.includes(id)) {
+        setEditableOrders(prev => {
+            const newState = {...prev};
+            delete newState[id];
+            return newState;
+        });
+    }
   };
   
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-    setOrders(currentOrders =>
-      currentOrders.map(order =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
+    const order = getOrderState(orderId);
+    setOrderState({ ...order, status: newStatus });
   };
 
   const handleNoteResolveChange = (orderId: string, noteId: string, resolved: boolean) => {
-    setOrders(currentOrders =>
-        currentOrders.map(order => {
-            if (order.id === orderId) {
-                const updatedNotes = order.notes?.map(note =>
-                    note.id === noteId ? { ...note, resolved } : note
-                );
-                return { ...order, notes: updatedNotes };
-            }
-            return order;
-        })
+    const order = getOrderState(orderId);
+    const updatedNotes = order.notes?.map(note =>
+        note.id === noteId ? { ...note, resolved } : note
     );
+    setOrderState({ ...order, notes: updatedNotes });
   };
 
   const handleAddNewNote = (orderId: string) => {
@@ -85,35 +111,38 @@ export function OrdersTable() {
           resolved: false,
       };
 
-      setOrders(currentOrders =>
-          currentOrders.map(order => {
-              if (order.id === orderId) {
-                  return {
-                      ...order,
-                      notes: [...(order.notes || []), newNote],
-                  };
-              }
-              return order;
-          })
-      );
+      const order = getOrderState(orderId);
+      setOrderState({ ...order, notes: [...(order.notes || []), newNote] });
       setNewNotes(prev => ({ ...prev, [orderId]: '' }));
   };
 
   const handleFieldChange = (orderId: string, field: 'shippingCompany' | 'driver', value: string) => {
-    setOrders(currentOrders =>
-      currentOrders.map(order =>
-        order.id === orderId ? { ...order, [field]: value } : order
-      )
-    );
+    const order = getOrderState(orderId);
+    setOrderState({ ...order, [field]: value });
   };
 
   const handleSaveChanges = (orderId: string) => {
-    // In a real app, you would send the updated order data to your backend here.
-    const order = orders.find((o) => o.id === orderId);
-    console.log('Saving changes for order:', order);
+    const orderToSave = editableOrders[orderId];
+    if (orderToSave) {
+        onUpdateOrder(orderToSave);
+        toast({
+            title: 'Changes Saved',
+            description: `Your changes for order ${orderId} have been successfully saved.`,
+        });
+        setEditableOrders(prev => {
+            const newState = {...prev};
+            delete newState[orderId];
+            return newState;
+        });
+    }
+  };
+
+  const handleDelete = (orderId: string) => {
+    onDeleteOrder(orderId);
     toast({
-      title: 'Changes Saved',
-      description: `Your changes for order ${orderId} have been successfully saved.`,
+        title: "Order Deleted",
+        description: `Order ${orderId} has been deleted.`,
+        variant: "destructive"
     });
   };
 
@@ -155,7 +184,8 @@ export function OrdersTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => {
+                {filteredOrders.length > 0 ? (filteredOrders.map((baseOrder) => {
+                  const order = getOrderState(baseOrder.id);
                   const config = statusConfig[order.status];
                   const isExpanded = expandedRows.includes(order.id);
 
@@ -175,8 +205,14 @@ export function OrdersTable() {
                         <TableCell>{order.destination}</TableCell>
                         <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Badge variant={config.variant} className="gap-1.5 pl-1.5">
-                            <config.icon className={`h-3.5 w-3.5 ${config.color}`} />
+                          <Badge variant={config.variant} className={cn("gap-1.5 pl-1.5", {
+                                'bg-primary text-primary-foreground': order.status === 'Delivered',
+                                'bg-destructive text-destructive-foreground': order.status === 'Cancelled',
+                            })}>
+                            <config.icon className={cn(`h-3.5 w-3.5 ${config.color}`, {
+                                'text-primary-foreground': order.status === 'Delivered',
+                                'text-destructive-foreground': order.status === 'Cancelled',
+                            })} />
                             {order.status}
                           </Badge>
                         </TableCell>
@@ -190,17 +226,37 @@ export function OrdersTable() {
                                   <CardTitle>Order Details</CardTitle>
                                   <div className="flex items-center gap-2">
                                       <Button variant="default" size="sm" onClick={() => handleSaveChanges(order.id)}>
-                                          <Save />
+                                          <Save className="h-4 w-4 mr-2" />
                                           Save Changes
                                       </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="group text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                                      >
-                                        <Trash2 />
-                                        <span className="hidden group-hover:inline">Delete Order</span>
-                                      </Button>
+                                      <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <Button
+                                              variant="ghost"
+                                              size="icon"
+                                              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                            >
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the order {order.id}.
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                              <AlertDialogAction 
+                                                onClick={() => handleDelete(order.id)}
+                                                className="bg-destructive hover:bg-destructive/90"
+                                              >
+                                                Delete
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
                                   </div>
                                 </CardHeader>
                                 <CardContent>
@@ -261,7 +317,7 @@ export function OrdersTable() {
                                                   size="sm"
                                                   onClick={() => handleStatusChange(order.id, 'Issue')}
                                               >
-                                                  <AlertTriangle />
+                                                  <AlertTriangle className="h-4 w-4 mr-2" />
                                                   Issue
                                               </Button>
                                               <Button
@@ -269,7 +325,7 @@ export function OrdersTable() {
                                                   size="sm"
                                                   onClick={() => handleStatusChange(order.id, 'Cancelled')}
                                               >
-                                                  <XCircle />
+                                                  <XCircle className="h-4 w-4 mr-2" />
                                                   Cancelled
                                               </Button>
                                           </div>
@@ -334,7 +390,13 @@ export function OrdersTable() {
                       )}
                     </React.Fragment>
                   );
-                })}
+                })) : (
+                    <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">
+                            No orders match the current filter.
+                        </TableCell>
+                    </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
