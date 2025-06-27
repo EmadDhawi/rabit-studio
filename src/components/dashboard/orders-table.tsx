@@ -6,12 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Table,
   TableBody,
   TableCell,
@@ -19,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MoreHorizontal, Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight } from 'lucide-react';
+import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import * as React from 'react';
 
 const statusConfig: Record<
@@ -55,7 +49,6 @@ export function OrdersTable() {
                 <TableHead>Destination</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -65,13 +58,7 @@ export function OrdersTable() {
                 return (
                   <React.Fragment key={order.id}>
                     <TableRow
-                      onClick={(e) => {
-                        // prevent dropdown from triggering row click
-                        if ((e.target as HTMLElement).closest('[data-radix-dropdown-menu-trigger]')) {
-                            return;
-                        }
-                        toggleRow(order.id)
-                      }}
+                      onClick={() => toggleRow(order.id)}
                       className="cursor-pointer"
                       data-state={isExpanded ? 'open' : 'closed'}
                     >
@@ -88,36 +75,29 @@ export function OrdersTable() {
                           {order.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Edit Order</DropdownMenuItem>
-                            <DropdownMenuItem>Track Order</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
                     </TableRow>
                     {isExpanded && (
                       <TableRow data-state="open">
-                        <TableCell colSpan={7} className="p-0 bg-muted/20">
+                        <TableCell colSpan={6} className="p-0 bg-muted/20">
                            <div className="p-4 sm:p-6">
                              <Card className="shadow-none border-border/60">
-                               <CardHeader>
-                                 <CardTitle>Order Items</CardTitle>
+                               <CardHeader className="flex flex-row items-center justify-between">
+                                 <CardTitle>Order Details</CardTitle>
+                                 <div className="flex items-center gap-2">
+                                     <Button variant="outline" size="sm">
+                                         <Edit className="mr-2 h-3.5 w-3.5" />
+                                         Edit Order
+                                     </Button>
+                                     <Button variant="destructive" size="sm">
+                                         <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                         Delete Order
+                                     </Button>
+                                 </div>
                                </CardHeader>
                                <CardContent>
                                   <ul className="space-y-2 text-sm">
                                     {order.items.map((item) => (
-                                       <li key={item.product.id} className="flex justify-between items-center">
+                                       <li key={item.product.id} className="flex justify-between items-center py-2 border-b last:border-b-0">
                                           <div>
                                             <span className="font-semibold">{item.product.name}</span>
                                             <span className="text-muted-foreground ml-2">(SKU: {item.product.sku})</span>
