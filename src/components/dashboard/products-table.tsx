@@ -172,7 +172,7 @@ export function ProductsTable({ products, onUpdateProduct, onDeleteProduct }: Pr
                         <TableCell className="text-muted-foreground">{product.sku}</TableCell>
                         <TableCell>{(product.quantity ?? 0) > 0 ? product.quantity : <span className="text-destructive">Out of stock</span>}</TableCell>
                         <TableCell>
-                          <Badge variant={product.active ? 'default' : 'secondary'} className={product.active ? 'bg-primary/20 text-primary-foreground border-primary/30' : ''}>
+                          <Badge variant={product.active ? 'default' : 'secondary'}>
                             {product.active ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
