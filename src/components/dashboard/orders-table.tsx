@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Trash2, AlertTriangle, Pencil } from 'lucide-react';
+import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Trash2, AlertTriangle, Save } from 'lucide-react';
 import * as React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const statusConfig: Record<
   OrderStatus,
@@ -38,6 +39,7 @@ export function OrdersTable() {
   const [orders, setOrders] = React.useState(mockOrders);
   const [expandedRows, setExpandedRows] = React.useState<string[]>([]);
   const [newNotes, setNewNotes] = React.useState<Record<string, string>>({});
+  const { toast } = useToast();
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) =>
@@ -100,6 +102,16 @@ export function OrdersTable() {
     );
   };
 
+  const handleSaveChanges = (orderId: string) => {
+    // In a real app, you would send the updated order data to your backend here.
+    const order = orders.find((o) => o.id === orderId);
+    console.log('Saving changes for order:', order);
+    toast({
+      title: 'Changes Saved',
+      description: `Your changes for order ${orderId} have been successfully saved.`,
+    });
+  };
+
 
   return (
     <Card>
@@ -152,6 +164,10 @@ export function OrdersTable() {
                                <CardHeader className="flex flex-row items-center justify-between">
                                  <CardTitle>Order Details</CardTitle>
                                  <div className="flex items-center gap-2">
+                                     <Button variant="default" size="sm" onClick={() => handleSaveChanges(order.id)}>
+                                         <Save className="mr-2 h-3.5 w-3.5" />
+                                         Save Changes
+                                     </Button>
                                      <Button variant="destructive" size="sm">
                                          <Trash2 className="mr-2 h-3.5 w-3.5" />
                                          Delete Order
