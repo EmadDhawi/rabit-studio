@@ -78,7 +78,7 @@ export function SidebarNav() {
         </SheetContent>
       </Sheet>
       <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <Button asChild variant="ghost">
+        <Button asChild variant="ghost" className="hover:bg-primary hover:text-primary-foreground">
           <Link href="/">
             <LogOut />
             Log Out

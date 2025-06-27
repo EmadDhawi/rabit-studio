@@ -58,7 +58,7 @@ export function OrdersTable({ orders, onUpdateOrder, onDeleteOrder }: OrdersTabl
   const [expandedRows, setExpandedRows] = React.useState<string[]>([]);
   const [newNotes, setNewNotes] = React.useState<Record<string, string>>({});
   const { toast } = useToast();
-  const [activeFilter, setActiveFilter] = React.useState<OrderStatus | 'All'>('All');
+  const [activeFilter, setActiveFilter] = React.useState<OrderStatus | 'All'>('New');
 
   React.useEffect(() => {
     // When orders prop changes, reset editable state
