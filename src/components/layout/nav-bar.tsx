@@ -6,9 +6,13 @@ import { LogOut, Menu, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export function NavBar() {
   const pathname = usePathname();
+  const { toast } = useToast();
 
   const menuItems = [
     { href: '/orders', label: 'Orders' },
@@ -18,6 +22,21 @@ export function NavBar() {
   const isActive = (href: string) => {
     return pathname.startsWith(href);
   };
+
+  const handleLogout = async () => {
+    try {
+        await signOut(auth);
+        // AuthProvider will handle redirect
+        toast({ title: "Logged Out", description: "You have been successfully logged out." });
+    } catch (error) {
+        toast({
+            title: "Logout Failed",
+            description: "An error occurred during logout. Please try again.",
+            variant: "destructive",
+        });
+    }
+  };
+
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
@@ -78,11 +97,9 @@ export function NavBar() {
         </SheetContent>
       </Sheet>
       <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <Button asChild variant="ghost" className="hover:bg-primary hover:text-primary-foreground">
-          <Link href="/">
-            <LogOut />
-            Log Out
-          </Link>
+        <Button onClick={handleLogout} variant="ghost" className="hover:bg-primary hover:text-primary-foreground">
+          <LogOut />
+          Log Out
         </Button>
       </div>
     </header>
