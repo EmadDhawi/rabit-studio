@@ -4,7 +4,7 @@ import { mockOrders } from '@/lib/data';
 import type { OrderStatus } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MoreHorizontal, Truck, CheckCircle, XCircle, Clock, Archive } from 'lucide-react';
+import { MoreHorizontal, Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight } from 'lucide-react';
 import * as React from 'react';
 
 const statusConfig: Record<
@@ -34,6 +34,14 @@ const statusConfig: Record<
 };
 
 export function OrdersTable() {
+  const [expandedRows, setExpandedRows] = React.useState<string[]>([]);
+
+  const toggleRow = (id: string) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -41,6 +49,7 @@ export function OrdersTable() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10" />
                 <TableHead>Order ID</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Destination</TableHead>
@@ -52,36 +61,78 @@ export function OrdersTable() {
             <TableBody>
               {mockOrders.map((order) => {
                 const config = statusConfig[order.status];
+                const isExpanded = expandedRows.includes(order.id);
                 return (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{order.customerName}</TableCell>
-                    <TableCell>{order.destination}</TableCell>
-                    <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <Badge variant={config.variant} className="gap-1.5 pl-1.5">
-                        <config.icon className={`h-3.5 w-3.5 ${config.color}`} />
-                        {order.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
-                          <DropdownMenuItem>Edit Order</DropdownMenuItem>
-                          <DropdownMenuItem>Track Order</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                  <React.Fragment key={order.id}>
+                    <TableRow
+                      onClick={(e) => {
+                        // prevent dropdown from triggering row click
+                        if ((e.target as HTMLElement).closest('[data-radix-dropdown-menu-trigger]')) {
+                            return;
+                        }
+                        toggleRow(order.id)
+                      }}
+                      className="cursor-pointer"
+                      data-state={isExpanded ? 'open' : 'closed'}
+                    >
+                      <TableCell className="px-2">
+                        {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                      </TableCell>
+                      <TableCell className="font-medium">{order.id}</TableCell>
+                      <TableCell>{order.customerName}</TableCell>
+                      <TableCell>{order.destination}</TableCell>
+                      <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge variant={config.variant} className="gap-1.5 pl-1.5">
+                          <config.icon className={`h-3.5 w-3.5 ${config.color}`} />
+                          {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuItem>Edit Order</DropdownMenuItem>
+                            <DropdownMenuItem>Track Order</DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive">
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                    {isExpanded && (
+                      <TableRow data-state="open">
+                        <TableCell colSpan={7} className="p-0 bg-muted/20">
+                           <div className="p-4 sm:p-6">
+                             <Card className="shadow-none border-border/60">
+                               <CardHeader>
+                                 <CardTitle>Order Items</CardTitle>
+                               </CardHeader>
+                               <CardContent>
+                                  <ul className="space-y-2 text-sm">
+                                    {order.items.map((item) => (
+                                       <li key={item.product.id} className="flex justify-between items-center">
+                                          <div>
+                                            <span className="font-semibold">{item.product.name}</span>
+                                            <span className="text-muted-foreground ml-2">(SKU: {item.product.sku})</span>
+                                          </div>
+                                          <span className="font-medium text-foreground">Qty: {item.quantity}</span>
+                                       </li>
+                                    ))}
+                                  </ul>
+                               </CardContent>
+                             </Card>
+                           </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </TableBody>
