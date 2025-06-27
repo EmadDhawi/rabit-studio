@@ -2,14 +2,12 @@ import { Button } from '@/components/ui/button';
 import { OrdersTable } from '@/components/dashboard/orders-table';
 import { Download, PlusCircle, BrainCircuit } from 'lucide-react';
 import { ShippingSuggestionModal } from '@/components/dashboard/shipping-suggestion-modal';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function DashboardPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 h-full">
       <header className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-            <SidebarTrigger className="md:hidden" />
             <h1 className="text-3xl font-bold font-headline text-foreground">Orders</h1>
         </div>
         <div className="flex items-center gap-2">

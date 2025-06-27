@@ -1,4 +1,3 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 
 export default function DashboardLayout({
@@ -7,11 +6,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-        <SidebarNav />
-        <SidebarInset className="bg-background">
-            {children}
-        </SidebarInset>
-    </SidebarProvider>
+    <div className="flex min-h-screen w-full flex-col">
+      <SidebarNav />
+      <main className="flex-1">
+        {children}
+      </main>
+    </div>
   );
 }
