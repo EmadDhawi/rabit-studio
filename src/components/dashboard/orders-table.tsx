@@ -97,7 +97,7 @@ export function OrdersTable() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-b-transparent bg-[#94a3b8] hover:bg-[#94a3b8] [&_th]:text-foreground">
                 <TableHead className="w-10" />
                 <TableHead>Order ID</TableHead>
                 <TableHead>Customer</TableHead>
