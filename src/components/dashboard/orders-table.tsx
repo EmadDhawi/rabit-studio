@@ -13,26 +13,39 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Edit, Trash2 } from 'lucide-react';
+import { Truck, CheckCircle, XCircle, Clock, Archive, ChevronDown, ChevronRight, Edit, Trash2, AlertTriangle } from 'lucide-react';
 import * as React from 'react';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const statusConfig: Record<
   OrderStatus,
   { variant: 'default' | 'secondary' | 'destructive'; icon: React.ElementType; color: string }
 > = {
-  Pending: { variant: 'secondary', icon: Clock, color: 'text-accent' },
-  Processing: { variant: 'secondary', icon: Archive, color: 'text-blue-400' },
+  New: { variant: 'secondary', icon: Clock, color: 'text-muted-foreground' },
+  Prepared: { variant: 'secondary', icon: Archive, color: 'text-primary' },
   Shipped: { variant: 'secondary', icon: Truck, color: 'text-primary' },
-  Delivered: { variant: 'default', icon: CheckCircle, color: 'text-green-500' },
+  Delivered: { variant: 'default', icon: CheckCircle, color: 'text-[hsl(var(--chart-2))]' },
   Cancelled: { variant: 'destructive', icon: XCircle, color: 'text-destructive' },
+  Issue: { variant: 'secondary', icon: AlertTriangle, color: 'text-accent' },
 };
 
 export function OrdersTable() {
+  const [orders, setOrders] = React.useState(mockOrders);
   const [expandedRows, setExpandedRows] = React.useState<string[]>([]);
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+  
+  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
+    setOrders(currentOrders =>
+      currentOrders.map(order =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
     );
   };
 
@@ -52,7 +65,7 @@ export function OrdersTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockOrders.map((order) => {
+              {orders.map((order) => {
                 const config = statusConfig[order.status];
                 const isExpanded = expandedRows.includes(order.id);
                 return (
@@ -106,6 +119,42 @@ export function OrdersTable() {
                                        </li>
                                     ))}
                                   </ul>
+                                  <Separator className="my-4" />
+                                    <div className="grid gap-4">
+                                        <div>
+                                            <Label className="font-semibold">Update Status</Label>
+                                            <p className="text-sm text-muted-foreground">Click to update the order status.</p>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(['New', 'Prepared', 'Shipped', 'Delivered'] as OrderStatus[]).map((status) => (
+                                                <Button
+                                                    key={status}
+                                                    variant={order.status === status ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => handleStatusChange(order.id, status)}
+                                                >
+                                                    {status}
+                                                </Button>
+                                            ))}
+                                            <Button
+                                                variant='outline'
+                                                className={cn(order.status === 'Issue' && 'bg-accent text-accent-foreground hover:bg-accent/90')}
+                                                size="sm"
+                                                onClick={() => handleStatusChange(order.id, 'Issue')}
+                                            >
+                                                <AlertTriangle className="mr-2 h-3.5 w-3.5" />
+                                                Issue
+                                            </Button>
+                                            <Button
+                                                variant={order.status === 'Cancelled' ? 'destructive' : 'outline'}
+                                                size="sm"
+                                                onClick={() => handleStatusChange(order.id, 'Cancelled')}
+                                            >
+                                                <XCircle className="mr-2 h-3.5 w-3.5" />
+                                                Cancelled
+                                            </Button>
+                                        </div>
+                                    </div>
                                </CardContent>
                              </Card>
                            </div>

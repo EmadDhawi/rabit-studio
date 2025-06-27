@@ -27,7 +27,7 @@ export const mockOrders: Order[] = [
     customerName: 'Mike Johnson',
     destination: 'Tokyo, Japan',
     date: '2023-10-24',
-    status: 'Processing',
+    status: 'Prepared',
     items: [
       { product: { id: 'P001', name: 'T-Shirt', sku: 'TS-01' }, quantity: 5 },
       { product: { id: 'P004', name: 'Cap', sku: 'CP-01' }, quantity: 3 },
@@ -38,7 +38,7 @@ export const mockOrders: Order[] = [
     customerName: 'Emily Davis',
     destination: 'Sydney, Australia',
     date: '2023-10-23',
-    status: 'Pending',
+    status: 'New',
     items: [
       { product: { id: 'P002', name: 'Mug', sku: 'MG-01' }, quantity: 10 },
     ],
