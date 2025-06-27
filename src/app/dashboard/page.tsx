@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { OrdersTable } from '@/components/dashboard/orders-table';
-import { Download, PlusCircle, BrainCircuit } from 'lucide-react';
-import { ShippingSuggestionModal } from '@/components/dashboard/shipping-suggestion-modal';
+import { Download, PlusCircle } from 'lucide-react';
 
 export default function DashboardPage() {
   return (
@@ -15,12 +14,6 @@ export default function DashboardPage() {
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <ShippingSuggestionModal>
-            <Button variant="outline">
-                <BrainCircuit className="mr-2 h-4 w-4" />
-                Smart Suggestion
-            </Button>
-          </ShippingSuggestionModal>
           <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
             <PlusCircle className="mr-2 h-4 w-4" />
             Create Order
