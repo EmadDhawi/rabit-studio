@@ -24,7 +24,7 @@ export function LoginForm() {
 
     // Mock login logic with a delay
     setTimeout(() => {
-      router.push('/dashboard/orders');
+      router.push('/orders');
     }, 1000);
   };
 
