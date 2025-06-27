@@ -165,13 +165,17 @@ export function OrdersTable() {
                                  <CardTitle>Order Details</CardTitle>
                                  <div className="flex items-center gap-2">
                                      <Button variant="default" size="sm" onClick={() => handleSaveChanges(order.id)}>
-                                         <Save className="mr-2 h-3.5 w-3.5" />
+                                         <Save />
                                          Save Changes
                                      </Button>
-                                     <Button variant="destructive" size="sm">
-                                         <Trash2 className="mr-2 h-3.5 w-3.5" />
-                                         Delete Order
-                                     </Button>
+                                     <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="group text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                      >
+                                        <Trash2 />
+                                        <span className="hidden group-hover:inline">Delete Order</span>
+                                      </Button>
                                  </div>
                                </CardHeader>
                                <CardContent>
@@ -232,7 +236,7 @@ export function OrdersTable() {
                                                 size="sm"
                                                 onClick={() => handleStatusChange(order.id, 'Issue')}
                                             >
-                                                <AlertTriangle className="mr-2 h-3.5 w-3.5" />
+                                                <AlertTriangle />
                                                 Issue
                                             </Button>
                                             <Button
@@ -240,7 +244,7 @@ export function OrdersTable() {
                                                 size="sm"
                                                 onClick={() => handleStatusChange(order.id, 'Cancelled')}
                                             >
-                                                <XCircle className="mr-2 h-3.5 w-3.5" />
+                                                <XCircle />
                                                 Cancelled
                                             </Button>
                                         </div>
