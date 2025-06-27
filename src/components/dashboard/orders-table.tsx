@@ -97,10 +97,11 @@ export function OrdersTable() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-b-transparent bg-[#94a3b8] hover:bg-[#94a3b8] [&_th]:text-foreground">
+              <TableRow className="bg-muted hover:bg-muted [&_th]:text-foreground">
                 <TableHead className="w-10" />
                 <TableHead>Order ID</TableHead>
                 <TableHead>Customer</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead>Destination</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
@@ -122,6 +123,7 @@ export function OrdersTable() {
                       </TableCell>
                       <TableCell className="font-medium">{order.id}</TableCell>
                       <TableCell>{order.customerName}</TableCell>
+                      <TableCell>{order.customerPhone}</TableCell>
                       <TableCell>{order.destination}</TableCell>
                       <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                       <TableCell>
@@ -133,7 +135,7 @@ export function OrdersTable() {
                     </TableRow>
                     {isExpanded && (
                       <TableRow data-state="open">
-                        <TableCell colSpan={6} className="p-0 bg-muted/20">
+                        <TableCell colSpan={7} className="p-0 bg-muted/20">
                            <div className="p-4 sm:p-6">
                              <Card className="shadow-none border-border/60">
                                <CardHeader className="flex flex-row items-center justify-between">

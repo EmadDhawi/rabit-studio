@@ -4,6 +4,7 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD001',
     customerName: 'John Doe',
+    customerPhone: '123-456-7890',
     destination: 'New York, USA',
     date: '2023-10-26',
     status: 'Delivered',
@@ -18,6 +19,7 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD002',
     customerName: 'Jane Smith',
+    customerPhone: '234-567-8901',
     destination: 'London, UK',
     date: '2023-10-25',
     status: 'Shipped',
@@ -32,6 +34,7 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD003',
     customerName: 'Mike Johnson',
+    customerPhone: '345-678-9012',
     destination: 'Tokyo, Japan',
     date: '2023-10-24',
     status: 'Prepared',
@@ -43,6 +46,7 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD004',
     customerName: 'Emily Davis',
+    customerPhone: '456-789-0123',
     destination: 'Sydney, Australia',
     date: '2023-10-23',
     status: 'New',
@@ -56,6 +60,7 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD005',
     customerName: 'Chris Brown',
+    customerPhone: '567-890-1234',
     destination: 'Berlin, Germany',
     date: '2023-10-22',
     status: 'Cancelled',
@@ -69,6 +74,7 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD006',
     customerName: 'Patricia Miller',
+    customerPhone: '678-901-2345',
     destination: 'Paris, France',
     date: '2023-10-21',
     status: 'Delivered',
@@ -79,6 +85,7 @@ export const mockOrders: Order[] = [
   {
     id: 'ORD007',
     customerName: 'Robert Wilson',
+    customerPhone: '789-012-3456',
     destination: 'Toronto, Canada',
     date: '2023-10-20',
     status: 'Shipped',

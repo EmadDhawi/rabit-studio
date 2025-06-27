@@ -12,7 +12,7 @@ export type OrderItem = {
 };
 
 export type Note = {
-  id: string;
+  id:string;
   content: string;
   date: string;
   resolved: boolean;
@@ -21,6 +21,7 @@ export type Note = {
 export type Order = {
   id: string;
   customerName: string;
+  customerPhone: string;
   destination: string;
   date: string;
   status: OrderStatus;
