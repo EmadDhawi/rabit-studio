@@ -11,6 +11,13 @@ export type OrderItem = {
   quantity: number;
 };
 
+export type Note = {
+  id: string;
+  content: string;
+  date: string;
+  resolved: boolean;
+};
+
 export type Order = {
   id: string;
   customerName: string;
@@ -18,5 +25,5 @@ export type Order = {
   date: string;
   status: OrderStatus;
   items: OrderItem[];
-  notes?: string;
+  notes?: Note[];
 };

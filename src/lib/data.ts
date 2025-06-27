@@ -11,7 +11,9 @@ export const mockOrders: Order[] = [
       { product: { id: 'P001', name: 'T-Shirt', sku: 'TS-01' }, quantity: 2 },
       { product: { id: 'P002', name: 'Mug', sku: 'MG-01' }, quantity: 1 },
     ],
-    notes: 'Customer requested gift wrapping.',
+    notes: [
+      { id: 'N001', content: 'Customer requested gift wrapping.', date: '2023-10-26T10:00:00Z', resolved: true },
+    ],
   },
   {
     id: 'ORD002',
@@ -22,7 +24,10 @@ export const mockOrders: Order[] = [
     items: [
       { product: { id: 'P003', name: 'Hoodie', sku: 'HD-01' }, quantity: 1 },
     ],
-    notes: 'Expedited shipping requested.',
+    notes: [
+      { id: 'N002', content: 'Expedited shipping requested.', date: '2023-10-25T11:00:00Z', resolved: true },
+      { id: 'N005', content: 'Confirm address with customer, seems to be a typo.', date: '2023-10-25T12:00:00Z', resolved: false }
+    ],
   },
   {
     id: 'ORD003',
@@ -44,7 +49,9 @@ export const mockOrders: Order[] = [
     items: [
       { product: { id: 'P002', name: 'Mug', sku: 'MG-01' }, quantity: 10 },
     ],
-    notes: 'Fragile items, please handle with care.',
+    notes: [
+      { id: 'N003', content: 'Fragile items, please handle with care.', date: '2023-10-23T09:00:00Z', resolved: false },
+    ],
   },
   {
     id: 'ORD005',
@@ -55,7 +62,9 @@ export const mockOrders: Order[] = [
     items: [
       { product: { id: 'P003', name: 'Hoodie', sku: 'HD-01' }, quantity: 1 },
     ],
-    notes: 'Customer cancelled due to wrong size.',
+    notes: [
+      { id: 'N004', content: 'Customer cancelled due to wrong size.', date: '2023-10-22T14:00:00Z', resolved: true },
+    ],
   },
   {
     id: 'ORD006',

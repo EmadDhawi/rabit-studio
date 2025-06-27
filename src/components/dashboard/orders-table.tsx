@@ -19,6 +19,7 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const statusConfig: Record<
   OrderStatus,
@@ -35,6 +36,7 @@ const statusConfig: Record<
 export function OrdersTable() {
   const [orders, setOrders] = React.useState(mockOrders);
   const [expandedRows, setExpandedRows] = React.useState<string[]>([]);
+  const [newNotes, setNewNotes] = React.useState<Record<string, string>>({});
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) =>
@@ -48,6 +50,45 @@ export function OrdersTable() {
         order.id === orderId ? { ...order, status: newStatus } : order
       )
     );
+  };
+
+  const handleNoteResolveChange = (orderId: string, noteId: string, resolved: boolean) => {
+    setOrders(currentOrders =>
+        currentOrders.map(order => {
+            if (order.id === orderId) {
+                const updatedNotes = order.notes?.map(note =>
+                    note.id === noteId ? { ...note, resolved } : note
+                );
+                return { ...order, notes: updatedNotes };
+            }
+            return order;
+        })
+    );
+  };
+
+  const handleAddNewNote = (orderId: string) => {
+      const noteContent = newNotes[orderId]?.trim();
+      if (!noteContent) return;
+
+      const newNote = {
+          id: `N${Date.now()}`,
+          content: noteContent,
+          date: new Date().toISOString(),
+          resolved: false,
+      };
+
+      setOrders(currentOrders =>
+          currentOrders.map(order => {
+              if (order.id === orderId) {
+                  return {
+                      ...order,
+                      notes: [...(order.notes || []), newNote],
+                  };
+              }
+              return order;
+          })
+      );
+      setNewNotes(prev => ({ ...prev, [orderId]: '' }));
   };
 
   return (
@@ -157,18 +198,56 @@ export function OrdersTable() {
                                         </div>
                                     </div>
                                     <Separator className="my-4" />
-                                    <div className="grid gap-2">
-                                        <Label htmlFor={`notes-${order.id}`} className="font-semibold">Notes</Label>
+                                    <div className="grid gap-4">
+                                      <Label className="font-semibold">Notes</Label>
+                                      <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
+                                        {order.notes && order.notes.length > 0 ? (
+                                          order.notes.map((note) => (
+                                            <div key={note.id} className="flex items-start gap-3 p-3 bg-secondary/30 rounded-md border">
+                                              <Checkbox
+                                                id={`note-${order.id}-${note.id}`}
+                                                checked={note.resolved}
+                                                onCheckedChange={(checked) => handleNoteResolveChange(order.id, note.id, !!checked)}
+                                                className="mt-1"
+                                                aria-label={`Mark note as ${note.resolved ? 'unresolved' : 'resolved'}`}
+                                              />
+                                              <div className="grid gap-1.5 flex-1">
+                                                <Label
+                                                  htmlFor={`note-${order.id}-${note.id}`}
+                                                  className={cn("font-normal cursor-pointer", note.resolved && "line-through text-muted-foreground")}
+                                                >
+                                                  {note.content}
+                                                </Label>
+                                                <p className="text-xs text-muted-foreground">
+                                                  {new Date(note.date).toLocaleString()}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          ))
+                                        ) : (
+                                          <p className="text-sm text-muted-foreground text-center py-4">No notes for this order yet.</p>
+                                        )}
+                                      </div>
+                                      <div className="grid gap-2">
+                                        <Label htmlFor={`new-note-${order.id}`} className="sr-only">Add New Note</Label>
                                         <Textarea
-                                            id={`notes-${order.id}`}
-                                            placeholder="Add a note for this order..."
-                                            defaultValue={order.notes}
-                                            rows={3}
-                                            className="text-sm"
+                                          id={`new-note-${order.id}`}
+                                          placeholder="Add a new note..."
+                                          rows={2}
+                                          className="text-sm"
+                                          value={newNotes[order.id] || ''}
+                                          onChange={(e) => setNewNotes(prev => ({...prev, [order.id]: e.target.value}))}
                                         />
-                                        <Button variant="outline" size="sm" className="justify-self-start">
-                                            Save Note
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="justify-self-start"
+                                          onClick={() => handleAddNewNote(order.id)}
+                                          disabled={!newNotes[order.id]?.trim()}
+                                        >
+                                          Add Note
                                         </Button>
+                                      </div>
                                     </div>
                                </CardContent>
                              </Card>
