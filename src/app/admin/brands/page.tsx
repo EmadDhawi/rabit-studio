@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Building } from 'lucide-react';
+import { Building, PlusCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CreateBrandDialog } from '@/components/admin/create-brand-dialog';
 
 export default function AdminBrandsPage() {
     const [brands, setBrands] = React.useState<Brand[]>([]);
@@ -92,6 +94,12 @@ export default function AdminBrandsPage() {
                         <Building className="h-8 w-8" />
                         <h1 className="text-3xl font-bold font-headline text-foreground">All Brands</h1>
                     </div>
+                    <CreateBrandDialog>
+                        <Button>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add New Brand
+                        </Button>
+                    </CreateBrandDialog>
                 </header>
                 {renderContent()}
             </div>
