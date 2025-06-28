@@ -19,8 +19,8 @@ import { AlertCircle } from 'lucide-react';
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = React.useState(false);
-  const [email, setEmail] = React.useState('demo@rabit.com');
-  const [password, setPassword] = React.useState('password');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -61,8 +61,7 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle className="text-2xl font-headline">Login</CardTitle>
         <CardDescription>
-          Enter your email and password to access your account. <br />
-          Use <strong>demo@rabit.com</strong> and <strong>password</strong> to sign in.
+          Enter your email and password to access your account.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleLogin}>
@@ -90,7 +89,8 @@ export function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <Input 
                 id="password" 
-                type="password" 
+                type="password"
+                placeholder="••••••••" 
                 required 
                 disabled={isLoading}
                 value={password}
