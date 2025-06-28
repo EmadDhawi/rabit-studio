@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useSearchParams } from 'next/navigation';
 import AppLayout from '@/components/layout/app-layout';
 import { OrdersTable } from "@/components/dashboard/orders-table";
 import { CreateOrderDialog } from "@/components/dashboard/create-order-dialog";
@@ -11,22 +12,40 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy, getDocs, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
+function OrdersPageContent() {
+  const { user, brand, isAdmin } = useAuth();
+  const searchParams = useSearchParams();
+  const adminBrandId = searchParams.get('brandId');
 
-export default function OrdersPage() {
-  const { user, brand, brandLoading } = useAuth();
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [targetBrandId, setTargetBrandId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    if (brandLoading || !brand) {
-      setLoading(brandLoading);
-      return;
+    let id: string | null = null;
+    if (isAdmin && adminBrandId) {
+        id = adminBrandId;
+    } else if (brand) {
+        id = brand.id;
     }
+    setTargetBrandId(id);
+  }, [isAdmin, adminBrandId, brand]);
 
-    const ordersQuery = query(collection(db, 'orders'), where("brandId", "==", brand.id));
-    const productsQuery = query(collection(db, 'brands', brand.id, 'products'), orderBy('name'));
+  React.useEffect(() => {
+    if (!targetBrandId) {
+        setLoading(false);
+        setOrders([]);
+        setProducts([]);
+        return;
+    }
+    
+    setLoading(true);
+
+    const ordersQuery = query(collection(db, 'orders'), where("brandId", "==", targetBrandId));
+    const productsQuery = query(collection(db, 'brands', targetBrandId, 'products'), orderBy('name'));
 
     const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
         const ordersDataPromises = snapshot.docs.map(async (orderDoc) => {
@@ -74,13 +93,13 @@ export default function OrdersPage() {
         unsubscribeOrders();
         unsubscribeProducts();
     };
-  }, [brand, brandLoading]);
+  }, [targetBrandId]);
 
   const handleCreateOrder = async (newOrderData: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt' | 'brandId'>) => {
-    if (!user || !brand) return;
+    if (!user || !targetBrandId) return;
     await addDoc(collection(db, 'orders'), {
         ...newOrderData,
-        brandId: brand.id,
+        brandId: targetBrandId,
         status: 'New',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -137,7 +156,6 @@ export default function OrdersPage() {
         date: serverTimestamp(),
         resolved: false,
     });
-    // Trigger a refresh by updating the parent order's timestamp
     const orderRef = doc(db, 'orders', orderId);
     await updateDoc(orderRef, { updatedAt: serverTimestamp() });
   }
@@ -182,15 +200,37 @@ export default function OrdersPage() {
           <div className="flex items-center gap-2">
               <h1 className="text-3xl font-bold font-headline text-foreground">Orders</h1>
           </div>
-          <CreateOrderDialog products={products} onCreateOrder={handleCreateOrder}>
-              <Button>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Order
-              </Button>
-          </CreateOrderDialog>
+          {(!isAdmin || !adminBrandId) && targetBrandId && (
+            <CreateOrderDialog products={products} onCreateOrder={handleCreateOrder}>
+                <Button>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Order
+                </Button>
+            </CreateOrderDialog>
+          )}
         </header>
         {renderContent()}
       </div>
     </AppLayout>
   );
+}
+
+
+export default function OrdersPage() {
+    return (
+        <React.Suspense fallback={
+            <div className="p-4 sm:p-6 lg:p-8 h-full">
+                <div className="space-y-4">
+                    <div className="flex gap-2">
+                        <Skeleton className="h-9 w-20" />
+                        <Skeleton className="h-9 w-20" />
+                        <Skeleton className="h-9 w-20" />
+                    </div>
+                    <Skeleton className="h-[400px] w-full" />
+                </div>
+            </div>
+        }>
+            <OrdersPageContent />
+        </React.Suspense>
+    );
 }

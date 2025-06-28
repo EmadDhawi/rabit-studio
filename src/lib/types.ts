@@ -1,5 +1,11 @@
 export type OrderStatus = 'New' | 'Prepared' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Issue';
 
+export type UserProfile = {
+  id: string;
+  isAdmin: boolean;
+  email: string;
+};
+
 export type Brand = {
   id: string;
   name: string;
