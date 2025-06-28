@@ -185,6 +185,7 @@ function OrdersPageContent() {
     return (
       <OrdersTable 
         orders={orders}
+        isAdmin={isAdmin}
         onUpdateOrder={handleUpdateOrder}
         onDeleteOrder={handleDeleteOrder}
         onAddNote={handleAddNote}
