@@ -25,7 +25,7 @@ export default function OrdersPage() {
       return;
     }
 
-    const ordersQuery = query(collection(db, 'orders'), where("brandId", "==", brand.id), orderBy('createdAt', 'desc'));
+    const ordersQuery = query(collection(db, 'orders'), where("brandId", "==", brand.id));
     const productsQuery = query(collection(db, 'brands', brand.id, 'products'), orderBy('name'));
 
     const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
@@ -54,6 +54,7 @@ export default function OrdersPage() {
         });
         
         Promise.all(ordersDataPromises).then(ordersData => {
+            ordersData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             setOrders(ordersData);
             setLoading(false);
         });
@@ -92,8 +93,7 @@ export default function OrdersPage() {
     const orderRef = doc(db, 'orders', updatedOrder.id);
     const originalOrder = orders.find(o => o.id === updatedOrder.id);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { notes, ...payload } : any = {
+    const payload: { [key: string]: any } = {
         customerName: updatedOrder.customerName,
         customerPhone: updatedOrder.customerPhone,
         destination: updatedOrder.destination,
