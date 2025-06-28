@@ -8,7 +8,6 @@ import type { Brand } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Building, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreateBrandDialog } from '@/components/admin/create-brand-dialog';
@@ -63,7 +62,7 @@ export default function AdminBrandsPage() {
                     <Link href={`/orders?brandId=${brand.id}`} key={brand.id}>
                         <Card className="h-full hover:shadow-lg transition-shadow">
                             <CardHeader className="flex flex-row items-center gap-4">
-                                <Image 
+                                <img 
                                     src={brand.logo || 'https://placehold.co/100x100.png'} 
                                     alt={`${brand.name} logo`} 
                                     width={48} 
