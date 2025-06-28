@@ -54,11 +54,12 @@ type OrderFormValues = z.infer<typeof orderSchema>;
 interface CreateOrderDialogProps {
   children: React.ReactNode;
   products: Product[];
-  onCreateOrder: (order: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt'>) => void;
+  onCreateOrder: (order: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt'>) => Promise<void>;
 }
 
 export function CreateOrderDialog({ children, products, onCreateOrder }: CreateOrderDialogProps) {
   const [open, setOpen] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
 
   const form = useForm<OrderFormValues>({
@@ -84,26 +85,40 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
         destination: '',
         items: [{ productId: '', quantity: 1 }],
       });
+      setIsSubmitting(false);
     }
   }, [open, form]);
 
-  const onSubmit = (data: OrderFormValues) => {
-    const orderItems: OrderItem[] = data.items.map(item => {
-      const product = products.find(p => p.id === item.productId);
-      if (!product) throw new Error("Invalid product selected"); // Should not happen with validation
-      return { product, quantity: item.quantity };
-    });
+  const onSubmit = async (data: OrderFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const orderItems: OrderItem[] = data.items.map(item => {
+        const product = products.find(p => p.id === item.productId);
+        if (!product) throw new Error("Invalid product selected"); // Should not happen with validation
+        return { product, quantity: item.quantity };
+      });
 
-    const newOrderData = {
-      customerName: data.customerName,
-      customerPhone: data.customerPhone,
-      destination: data.destination,
-      items: orderItems,
-    };
-    
-    onCreateOrder(newOrderData);
-    toast({ title: "Order Created", description: `A new order for ${data.customerName} has been successfully created.` });
-    setOpen(false);
+      const newOrderData = {
+        customerName: data.customerName,
+        customerPhone: data.customerPhone,
+        destination: data.destination,
+        items: orderItems,
+        notes: [],
+      };
+      
+      await onCreateOrder(newOrderData);
+      toast({ title: "Order Created", description: `A new order for ${data.customerName} has been successfully created.` });
+      setOpen(false);
+    } catch (error) {
+      console.error("Failed to create order:", error);
+      toast({
+          title: "Error",
+          description: "Failed to create the order. Please try again.",
+          variant: "destructive",
+      });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -122,7 +137,7 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <ScrollArea className="h-[60vh]">
-                <div className="space-y-4 p-4">
+                <div className="space-y-4 p-4 pr-6">
                     <FormField
                     control={form.control}
                     name="customerName"
@@ -130,7 +145,7 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
                         <FormItem>
                         <FormLabel>Customer Name</FormLabel>
                         <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
+                            <Input placeholder="e.g., John Doe" {...field} disabled={isSubmitting} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -144,7 +159,7 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
                             <FormItem>
                             <FormLabel>Customer Phone</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g., 123-456-7890" {...field} />
+                                <Input placeholder="e.g., 123-456-7890" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -157,7 +172,7 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
                             <FormItem>
                             <FormLabel>Destination</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g., New York, USA" {...field} />
+                                <Input placeholder="e.g., New York, USA" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -175,6 +190,7 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
                                 variant="outline"
                                 size="sm"
                                 onClick={() => append({ productId: '', quantity: 1 })}
+                                disabled={isSubmitting}
                             >
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Add Item
@@ -189,7 +205,7 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
                                         render={({ field }) => (
                                             <FormItem className="flex-1">
                                                 <FormLabel>Product</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                                                     <FormControl>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select a product" />
@@ -215,14 +231,14 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
                                             <FormItem>
                                                 <FormLabel>Quantity</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" placeholder="1" {...field} className="w-24" />
+                                                    <Input type="number" placeholder="1" {...field} className="w-24" disabled={isSubmitting} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
                                     {fields.length > 1 && (
-                                    <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => remove(index)}>
+                                    <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => remove(index)} disabled={isSubmitting}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                     )}
@@ -239,9 +255,11 @@ export function CreateOrderDialog({ children, products, onCreateOrder }: CreateO
             </ScrollArea>
             <DialogFooter className="pt-6 border-t mt-4">
                 <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button>
                 </DialogClose>
-                <Button type="submit">Create Order</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Creating...' : 'Create Order'}
+                </Button>
             </DialogFooter>
           </form>
         </Form>
