@@ -42,7 +42,7 @@ type ProductFormValues = z.infer<typeof productSchema>;
 interface CreateProductDialogProps {
   children: React.ReactNode;
   productToEdit?: Product;
-  onCreateProduct?: (product: Omit<Product, 'id'>) => void;
+  onCreateProduct?: (product: Omit<Product, 'id' | 'brandId'>) => void;
   onUpdateProduct?: (product: Product) => void;
 }
 

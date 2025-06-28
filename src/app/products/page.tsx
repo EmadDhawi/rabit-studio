@@ -13,17 +13,17 @@ import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, order
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductsPage() {
-  const { user } = useAuth();
+  const { user, brand, brandLoading } = useAuth();
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    if (!user) {
-      setLoading(false);
+    if (brandLoading || !brand) {
+      setLoading(brandLoading);
       return;
     }
 
-    const q = query(collection(db, 'products'), orderBy('name'));
+    const q = query(collection(db, 'brands', brand.id, 'products'), orderBy('name'));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
@@ -35,23 +35,25 @@ export default function ProductsPage() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [brand, brandLoading]);
 
-  const handleCreateProduct = async (newProduct: Omit<Product, 'id'>) => {
-    if (!user) return;
-    await addDoc(collection(db, 'products'), newProduct);
+  const handleCreateProduct = async (newProduct: Omit<Product, 'id' | 'brandId'>) => {
+    if (!user || !brand) return;
+    const productsCollection = collection(db, 'brands', brand.id, 'products');
+    await addDoc(productsCollection, { ...newProduct, brandId: brand.id });
   };
   
   const handleUpdateProduct = async (updatedProduct: Product) => {
-    if (!user) return;
+    if (!user || !brand) return;
     const { id, ...dataToUpdate } = updatedProduct;
-    const productRef = doc(db, 'products', id);
+    const productRef = doc(db, 'brands', brand.id, 'products', id);
     await updateDoc(productRef, dataToUpdate);
   };
   
   const handleDeleteProduct = async (productId: string) => {
-    if (!user) return;
-    await deleteDoc(doc(db, 'products', productId));
+    if (!user || !brand) return;
+    const productRef = doc(db, 'brands', brand.id, 'products', productId);
+    await deleteDoc(productRef);
   }
   
   const renderContent = () => {

@@ -9,10 +9,13 @@ import { cn } from '@/lib/utils';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export function NavBar() {
   const pathname = usePathname();
   const { toast } = useToast();
+  const { brand } = useAuth();
 
   const menuItems = [
     { href: '/orders', label: 'Orders' },
@@ -26,7 +29,6 @@ export function NavBar() {
   const handleLogout = async () => {
     try {
         await signOut(auth);
-        // AuthProvider will handle redirect
         toast({ title: "Logged Out", description: "You have been successfully logged out." });
     } catch (error) {
         toast({
@@ -45,8 +47,16 @@ export function NavBar() {
           href="/orders"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          <Truck className="h-6 w-6 text-primary" />
-          <span className="font-headline font-bold">Rabit</span>
+          {brand?.logo ? (
+             <Avatar className="h-6 w-6">
+                <AvatarImage src={brand.logo} alt={brand.name} />
+                <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+          ) : (
+            <Truck className="h-6 w-6 text-primary" />
+          )}
+
+          <span className="font-headline font-bold">{brand?.name || 'Rabit'}</span>
         </Link>
         {menuItems.map((item) => (
            <Link
@@ -79,7 +89,7 @@ export function NavBar() {
               className="flex items-center gap-2 text-lg font-semibold"
             >
               <Truck className="h-6 w-6 text-primary" />
-              <span className="font-headline font-bold">Rabit</span>
+              <span className="font-headline font-bold">{brand?.name || 'Rabit'}</span>
             </Link>
             {menuItems.map((item) => (
               <Link

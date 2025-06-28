@@ -1,7 +1,20 @@
 export type OrderStatus = 'New' | 'Prepared' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Issue';
 
+export type Brand = {
+  id: string;
+  name: string;
+  logo?: string;
+  phone?: string;
+  owner: string;
+  active: boolean;
+  deleted: boolean;
+  createdAt: any;
+  updatedAt: any;
+}
+
 export type Product = {
   id: string;
+  brandId: string;
   name: string;
   sku: string;
   imageUrl?: string;
@@ -23,6 +36,7 @@ export type Note = {
 
 export type Order = {
   id: string;
+  brandId: string;
   customerName: string;
   customerPhone: string;
   destination: string;

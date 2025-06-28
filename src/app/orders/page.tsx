@@ -9,24 +9,24 @@ import { PlusCircle } from 'lucide-react';
 import type { Order, Product, Note } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy, getDocs, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function OrdersPage() {
-  const { user } = useAuth();
+  const { user, brand, brandLoading } = useAuth();
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    if (!user) {
-      setLoading(false);
+    if (brandLoading || !brand) {
+      setLoading(brandLoading);
       return;
     }
 
-    const ordersQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-    const productsQuery = query(collection(db, 'products'), orderBy('name'));
+    const ordersQuery = query(collection(db, 'orders'), where("brandId", "==", brand.id), orderBy('createdAt', 'desc'));
+    const productsQuery = query(collection(db, 'brands', brand.id, 'products'), orderBy('name'));
 
     const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
         const ordersDataPromises = snapshot.docs.map(async (orderDoc) => {
@@ -73,12 +73,13 @@ export default function OrdersPage() {
         unsubscribeOrders();
         unsubscribeProducts();
     };
-  }, [user]);
+  }, [brand, brandLoading]);
 
-  const handleCreateOrder = async (newOrderData: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt'>) => {
-    if (!user) return;
+  const handleCreateOrder = async (newOrderData: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt' | 'brandId'>) => {
+    if (!user || !brand) return;
     await addDoc(collection(db, 'orders'), {
         ...newOrderData,
+        brandId: brand.id,
         status: 'New',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -97,7 +98,18 @@ export default function OrdersPage() {
         customerPhone: updatedOrder.customerPhone,
         destination: updatedOrder.destination,
         status: updatedOrder.status,
-        items: updatedOrder.items,
+        items: updatedOrder.items.map(item => ({
+          product: {
+            id: item.product.id,
+            brandId: item.product.brandId,
+            name: item.product.name,
+            sku: item.product.sku,
+            imageUrl: item.product.imageUrl,
+            quantity: item.product.quantity,
+            active: item.product.active,
+          },
+          quantity: item.quantity,
+        })),
         shippingCompany: updatedOrder.shippingCompany || '',
         driver: updatedOrder.driver || '',
         updatedAt: serverTimestamp(),

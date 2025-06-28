@@ -54,7 +54,7 @@ type OrderFormValues = z.infer<typeof orderSchema>;
 interface CreateOrderDialogProps {
   children: React.ReactNode;
   products: Product[];
-  onCreateOrder: (order: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt'>) => Promise<void>;
+  onCreateOrder: (order: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt' | 'brandId'>) => Promise<void>;
 }
 
 export function CreateOrderDialog({ children, products, onCreateOrder }: CreateOrderDialogProps) {
