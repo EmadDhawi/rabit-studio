@@ -203,7 +203,7 @@ export function OrdersTable({ orders, onUpdateOrder, onDeleteOrder }: OrdersTabl
                         <TableCell>{order.customerName}</TableCell>
                         <TableCell>{order.customerPhone}</TableCell>
                         <TableCell>{order.destination}</TableCell>
-                        <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <Badge variant={config.variant} className={cn("gap-1.5 pl-1.5", {
                                 'bg-primary text-primary-foreground': order.status === 'Delivered',

@@ -6,31 +6,113 @@ import { OrdersTable } from "@/components/dashboard/orders-table";
 import { CreateOrderDialog } from "@/components/dashboard/create-order-dialog";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from 'lucide-react';
-import { mockOrders, mockProducts } from '@/lib/data';
+import { mockProducts } from '@/lib/data';
 import type { Order } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
+import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function OrdersPage() {
-  const [orders, setOrders] = React.useState<Order[]>(mockOrders);
-  const products = mockProducts; // In a real app, this would likely be fetched
+  const { user } = useAuth();
+  const [orders, setOrders] = React.useState<Order[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const products = mockProducts; // In a real app, this would likely be fetched from Firestore as well
 
-  const handleCreateOrder = (newOrderData: Omit<Order, 'id' | 'status' | 'date'>) => {
-    const newOrder: Order = {
+  React.useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const ordersData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          ...data,
+          id: doc.id,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : new Date().toISOString(),
+          shippedAt: data.shippedAt?.toDate ? data.shippedAt.toDate().toISOString() : null,
+        } as Order;
+      });
+      setOrders(ordersData);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching orders: ", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  const handleCreateOrder = async (newOrderData: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt'>) => {
+    if (!user) return;
+    await addDoc(collection(db, 'orders'), {
         ...newOrderData,
-        id: `ORD${String(Date.now()).slice(-6)}`,
         status: 'New',
-        date: new Date().toISOString(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        shippedAt: null,
+    });
+  };
+
+  const handleUpdateOrder = async (updatedOrder: Order) => {
+    if (!user) return;
+    const orderRef = doc(db, 'orders', updatedOrder.id);
+    const originalOrder = orders.find(o => o.id === updatedOrder.id);
+
+    const payload: { [key: string]: any } = {
+        customerName: updatedOrder.customerName,
+        customerPhone: updatedOrder.customerPhone,
+        destination: updatedOrder.destination,
+        status: updatedOrder.status,
+        items: updatedOrder.items,
+        notes: updatedOrder.notes || [],
+        shippingCompany: updatedOrder.shippingCompany || '',
+        driver: updatedOrder.driver || '',
+        updatedAt: serverTimestamp(),
     };
-    setOrders(prev => [newOrder, ...prev]);
+
+    if (updatedOrder.status === 'Shipped' && originalOrder?.status !== 'Shipped') {
+        payload.shippedAt = serverTimestamp();
+    } else if (updatedOrder.status !== 'Shipped' && originalOrder?.status === 'Shipped') {
+        payload.shippedAt = null;
+    }
+    
+    await updateDoc(orderRef, payload);
   };
 
-  const handleUpdateOrder = (updatedOrder: Order) => {
-    setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!user) return;
+    await deleteDoc(doc(db, 'orders', orderId));
   };
 
-  const handleDeleteOrder = (orderId: string) => {
-    setOrders(prev => prev.filter(o => o.id !== orderId));
-  };
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-20" />
+          </div>
+          <Skeleton className="h-[400px] w-full" />
+        </div>
+      )
+    }
+
+    return (
+      <OrdersTable 
+        orders={orders}
+        onUpdateOrder={handleUpdateOrder}
+        onDeleteOrder={handleDeleteOrder}
+      />
+    );
+  }
 
   return (
     <AppLayout>
@@ -46,11 +128,7 @@ export default function OrdersPage() {
               </Button>
           </CreateOrderDialog>
         </header>
-        <OrdersTable 
-          orders={orders}
-          onUpdateOrder={handleUpdateOrder}
-          onDeleteOrder={handleDeleteOrder}
-        />
+        {renderContent()}
       </div>
     </AppLayout>
   );

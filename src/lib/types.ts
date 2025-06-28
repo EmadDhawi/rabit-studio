@@ -26,10 +26,12 @@ export type Order = {
   customerName: string;
   customerPhone: string;
   destination: string;
-  date: string;
   status: OrderStatus;
   items: OrderItem[];
   notes?: Note[];
   shippingCompany?: string;
   driver?: string;
+  createdAt: any;
+  updatedAt: any;
+  shippedAt?: any | null;
 };
