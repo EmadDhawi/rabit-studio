@@ -6,25 +6,75 @@ import { Button } from "@/components/ui/button";
 import { ProductsTable } from "@/components/dashboard/products-table";
 import { PlusCircle } from "lucide-react";
 import { CreateProductDialog } from '@/components/dashboard/create-product-dialog';
-import { mockProducts } from '@/lib/data';
 import type { Product } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
+import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, orderBy } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductsPage() {
-  const [products, setProducts] = React.useState<Product[]>(mockProducts);
+  const { user } = useAuth();
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const handleCreateProduct = (newProduct: Omit<Product, 'id'>) => {
-    setProducts(prev => [
-      { ...newProduct, id: `P${Date.now()}` },
-      ...prev,
-    ]);
+  React.useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const q = query(collection(db, 'products'), orderBy('name'));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      setProducts(productsData);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching products: ", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  const handleCreateProduct = async (newProduct: Omit<Product, 'id'>) => {
+    if (!user) return;
+    await addDoc(collection(db, 'products'), newProduct);
   };
   
-  const handleUpdateProduct = (updatedProduct: Product) => {
-    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+  const handleUpdateProduct = async (updatedProduct: Product) => {
+    if (!user) return;
+    const { id, ...dataToUpdate } = updatedProduct;
+    const productRef = doc(db, 'products', id);
+    await updateDoc(productRef, dataToUpdate);
   };
   
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(prev => prev.filter(p => p.id !== productId));
+  const handleDeleteProduct = async (productId: string) => {
+    if (!user) return;
+    await deleteDoc(doc(db, 'products', productId));
+  }
+  
+  const renderContent = () => {
+    if (loading) {
+        return (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Skeleton className="h-9 w-20" />
+                <Skeleton className="h-9 w-20" />
+                <Skeleton className="h-9 w-20" />
+              </div>
+              <Skeleton className="h-[400px] w-full" />
+            </div>
+          )
+    }
+
+    return (
+        <ProductsTable 
+          products={products}
+          onUpdateProduct={handleUpdateProduct}
+          onDeleteProduct={handleDeleteProduct}
+        />
+    );
   }
 
   return (
@@ -41,11 +91,7 @@ export default function ProductsPage() {
             </Button>
           </CreateProductDialog>
         </header>
-        <ProductsTable 
-          products={products}
-          onUpdateProduct={handleUpdateProduct}
-          onDeleteProduct={handleDeleteProduct}
-        />
+        {renderContent()}
       </div>
     </AppLayout>
   );

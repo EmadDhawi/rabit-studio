@@ -6,8 +6,7 @@ import { OrdersTable } from "@/components/dashboard/orders-table";
 import { CreateOrderDialog } from "@/components/dashboard/create-order-dialog";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from 'lucide-react';
-import { mockProducts } from '@/lib/data';
-import type { Order } from '@/lib/types';
+import type { Order, Product } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
@@ -17,8 +16,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function OrdersPage() {
   const { user } = useAuth();
   const [orders, setOrders] = React.useState<Order[]>([]);
+  const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const products = mockProducts; // In a real app, this would likely be fetched from Firestore as well
 
   React.useEffect(() => {
     if (!user) {
@@ -26,9 +25,10 @@ export default function OrdersPage() {
       return;
     }
 
-    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const ordersQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+    const productsQuery = query(collection(db, 'products'), orderBy('name'));
+
+    const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
       const ordersData = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
@@ -45,8 +45,18 @@ export default function OrdersPage() {
       console.error("Error fetching orders: ", error);
       setLoading(false);
     });
+    
+    const unsubscribeProducts = onSnapshot(productsQuery, (snapshot) => {
+      const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      setProducts(productsData);
+    }, (error) => {
+      console.error("Error fetching products: ", error);
+    });
 
-    return () => unsubscribe();
+    return () => {
+        unsubscribeOrders();
+        unsubscribeProducts();
+    };
   }, [user]);
 
   const handleCreateOrder = async (newOrderData: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'shippedAt'>) => {
