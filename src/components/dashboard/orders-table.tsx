@@ -51,9 +51,11 @@ interface OrdersTableProps {
     orders: Order[];
     onUpdateOrder: (order: Order) => void;
     onDeleteOrder: (orderId: string) => void;
+    onAddNote: (orderId: string, noteContent: string) => void;
+    onUpdateNoteResolved: (orderId: string, noteId: string, resolved: boolean) => void;
 }
 
-export function OrdersTable({ orders, onUpdateOrder, onDeleteOrder }: OrdersTableProps) {
+export function OrdersTable({ orders, onUpdateOrder, onDeleteOrder, onAddNote, onUpdateNoteResolved }: OrdersTableProps) {
   const [editableOrders, setEditableOrders] = React.useState<Record<string, Order>>({});
   const [expandedRows, setExpandedRows] = React.useState<string[]>([]);
   const [newNotes, setNewNotes] = React.useState<Record<string, string>>({});
@@ -93,26 +95,14 @@ export function OrdersTable({ orders, onUpdateOrder, onDeleteOrder }: OrdersTabl
   };
 
   const handleNoteResolveChange = (orderId: string, noteId: string, resolved: boolean) => {
-    const order = getOrderState(orderId);
-    const updatedNotes = order.notes?.map(note =>
-        note.id === noteId ? { ...note, resolved } : note
-    );
-    setOrderState({ ...order, notes: updatedNotes });
+    onUpdateNoteResolved(orderId, noteId, resolved);
   };
 
   const handleAddNewNote = (orderId: string) => {
       const noteContent = newNotes[orderId]?.trim();
       if (!noteContent) return;
 
-      const newNote = {
-          id: `N${Date.now()}`,
-          content: noteContent,
-          date: new Date().toISOString(),
-          resolved: false,
-      };
-
-      const order = getOrderState(orderId);
-      setOrderState({ ...order, notes: [...(order.notes || []), newNote] });
+      onAddNote(orderId, noteContent);
       setNewNotes(prev => ({ ...prev, [orderId]: '' }));
   };
 

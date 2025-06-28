@@ -6,10 +6,10 @@ import { OrdersTable } from "@/components/dashboard/orders-table";
 import { CreateOrderDialog } from "@/components/dashboard/create-order-dialog";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from 'lucide-react';
-import type { Order, Product } from '@/lib/types';
+import type { Order, Product, Note } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy, getDocs } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
@@ -29,18 +29,34 @@ export default function OrdersPage() {
     const productsQuery = query(collection(db, 'products'), orderBy('name'));
 
     const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
-      const ordersData = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          ...data,
-          id: doc.id,
-          createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
-          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : new Date().toISOString(),
-          shippedAt: data.shippedAt?.toDate ? data.shippedAt.toDate().toISOString() : null,
-        } as Order;
-      });
-      setOrders(ordersData);
-      setLoading(false);
+        const ordersDataPromises = snapshot.docs.map(async (orderDoc) => {
+            const orderData = orderDoc.data();
+            const notesCollectionRef = collection(db, 'orders', orderDoc.id, 'notes');
+            const notesQuery = query(notesCollectionRef, orderBy('date', 'desc'));
+            const notesSnapshot = await getDocs(notesQuery);
+            const notes = notesSnapshot.docs.map(noteDoc => {
+                const noteData = noteDoc.data();
+                return { 
+                    id: noteDoc.id, 
+                    ...noteData,
+                    date: noteData.date?.toDate ? noteData.date.toDate().toISOString() : new Date().toISOString(),
+                } as Note
+            });
+
+            return {
+              ...orderData,
+              id: orderDoc.id,
+              notes,
+              createdAt: orderData.createdAt?.toDate ? orderData.createdAt.toDate().toISOString() : new Date().toISOString(),
+              updatedAt: orderData.updatedAt?.toDate ? orderData.updatedAt.toDate().toISOString() : new Date().toISOString(),
+              shippedAt: orderData.shippedAt?.toDate ? orderData.shippedAt.toDate().toISOString() : null,
+            } as Order;
+        });
+        
+        Promise.all(ordersDataPromises).then(ordersData => {
+            setOrders(ordersData);
+            setLoading(false);
+        });
     }, (error) => {
       console.error("Error fetching orders: ", error);
       setLoading(false);
@@ -75,13 +91,13 @@ export default function OrdersPage() {
     const orderRef = doc(db, 'orders', updatedOrder.id);
     const originalOrder = orders.find(o => o.id === updatedOrder.id);
 
-    const payload: { [key: string]: any } = {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { notes, ...payload } : any = {
         customerName: updatedOrder.customerName,
         customerPhone: updatedOrder.customerPhone,
         destination: updatedOrder.destination,
         status: updatedOrder.status,
         items: updatedOrder.items,
-        notes: updatedOrder.notes || [],
         shippingCompany: updatedOrder.shippingCompany || '',
         driver: updatedOrder.driver || '',
         updatedAt: serverTimestamp(),
@@ -100,6 +116,27 @@ export default function OrdersPage() {
     if (!user) return;
     await deleteDoc(doc(db, 'orders', orderId));
   };
+  
+  const handleAddNote = async (orderId: string, noteContent: string) => {
+    if (!user || !noteContent.trim()) return;
+    const notesCollectionRef = collection(db, 'orders', orderId, 'notes');
+    await addDoc(notesCollectionRef, {
+        content: noteContent,
+        date: serverTimestamp(),
+        resolved: false,
+    });
+    // Trigger a refresh by updating the parent order's timestamp
+    const orderRef = doc(db, 'orders', orderId);
+    await updateDoc(orderRef, { updatedAt: serverTimestamp() });
+  }
+
+  const handleUpdateNoteResolved = async (orderId: string, noteId: string, resolved: boolean) => {
+    if (!user) return;
+    const noteRef = doc(db, 'orders', orderId, 'notes', noteId);
+    await updateDoc(noteRef, { resolved });
+    const orderRef = doc(db, 'orders', orderId);
+    await updateDoc(orderRef, { updatedAt: serverTimestamp() });
+  }
 
   const renderContent = () => {
     if (loading) {
@@ -120,6 +157,8 @@ export default function OrdersPage() {
         orders={orders}
         onUpdateOrder={handleUpdateOrder}
         onDeleteOrder={handleDeleteOrder}
+        onAddNote={handleAddNote}
+        onUpdateNoteResolved={handleUpdateNoteResolved}
       />
     );
   }
